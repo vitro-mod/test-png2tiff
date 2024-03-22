@@ -1,5 +1,4 @@
 const IMAGES_DIR = 'images';
-const LIST = process.argv[2];
 const COLUMNS = 4;
 const BACKGROUND = '#fff';
 const TILE_WIDTH = 200;
@@ -8,10 +7,16 @@ const TILE_GAP = 30;
 const fs = require('fs');
 const Jimp = require("jimp");
 
-let filenames;
+let filenames = [];
 try {
-    // Получаем содержимое директории
-    filenames = fs.readdirSync(`./${IMAGES_DIR}/${LIST}`);
+    // Читаем все переданные директории
+    for (const folder of process.argv.slice(2)) {
+
+        // Получаем содержимое директории
+        let folderFiles = fs.readdirSync(`./${IMAGES_DIR}/${folder}`);
+        folderFiles = folderFiles.map(file => `./${IMAGES_DIR}/${folder}/${file}`);
+        filenames = filenames.concat(folderFiles);
+    }
 
     // Фильтруем, чтобы оставить в списке только интересующие нас *.png*
     filenames = filenames.filter(filename => filename.endsWith('.png'));
@@ -31,7 +36,7 @@ try {
         if (err) throw err;
 
         // Читаем изображения
-        const imagesReadPromises = filenames.map(filename => Jimp.read(`./${IMAGES_DIR}/${LIST}/${filename}`));
+        const imagesReadPromises = filenames.map(filename => Jimp.read(filename));
         console.log(`Прочитано ${filenames.length} файлов.`);
 
         const tileImages = await Promise.all(imagesReadPromises);
